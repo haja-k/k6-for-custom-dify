@@ -1,0 +1,27 @@
+# docker-compose.yml
+# You can remove 'version: 3.8' if you want to silence the warning.
+
+services:
+  k6:
+    image: grafana/k6:latest
+    volumes:
+      - .:/app # Mount your current directory to /app inside the container
+    working_dir: /app # Set the working directory inside the container
+    # This section tells Docker Compose to take the values from your .env file
+    # and expose them as environment variables inside the 'k6' container.
+    environment:
+      - DIFY_HOST=${DIFY_HOST}
+      - DIFY_APP_ID=${DIFY_APP_ID}
+      - DIFY_APP_PUBLIC_TOKEN=${DIFY_APP_PUBLIC_TOKEN}
+      # You don't necessarily need PUBLIC_URL in the K6 test if it's not used directly
+      # in API calls, but including it doesn't hurt.
+      # - PUBLIC_URL=${PUBLIC_URL}
+    # The command for k6 *inside* the container no longer needs --env-file
+    # because the variables are already available in the container's environment.
+    command: ["run", "api_test.js"]
+    networks:
+      - k6_network
+
+networks:
+  k6_network:
+    driver: bridge
